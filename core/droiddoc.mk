@@ -155,14 +155,11 @@ endif
 $(full_target): PRIVATE_LOCAL_PATH := $(LOCAL_PATH)
 
 $(full_target): $(full_src_files) $(droiddoc_templates) $(droiddoc) $(html_dir_files) $(full_java_lib_deps) $(LOCAL_ADDITIONAL_DEPENDENCIES)
-	@echo -e ${PRT_HST}"Docs droiddoc:"${CL_RST}" $(PRIVATE_OUT_DIR)"
+	@echo -e ${CL_YLW}"Docs droiddoc:"${CL_RST}" $(PRIVATE_OUT_DIR)"
 	$(hide) mkdir -p $(dir $@)
 	$(call prepare-doc-source-list,$(PRIVATE_SRC_LIST_FILE),$(PRIVATE_JAVA_FILES), \
 			$(PRIVATE_SOURCE_INTERMEDIATES_DIR) $(PRIVATE_ADDITIONAL_JAVA_DIR))
 	$(hide) ( \
-		head -1 $(PRIVATE_SRC_LIST_FILE) | tr " " "\n" | sort | uniq | tr "\n" " " > $(PRIVATE_SRC_LIST_FILE)_temp; \
-		cat $(PRIVATE_SRC_LIST_FILE) | sed '1 d' >> $(PRIVATE_SRC_LIST_FILE)_temp; \
-		mv $(PRIVATE_SRC_LIST_FILE)_temp $(PRIVATE_SRC_LIST_FILE); \
 		javadoc \
                 -encoding UTF-8 \
                 \@$(PRIVATE_SRC_LIST_FILE) \
@@ -193,14 +190,11 @@ else
 ##
 ##
 $(full_target): $(full_src_files) $(full_java_lib_deps)
-	@echo -e ${PRT_HST}"Docs javadoc:"${CL_RST}" $(PRIVATE_OUT_DIR)"
+	@echo -e ${CL_YLW}"Docs javadoc:"${CL_RST}" $(PRIVATE_OUT_DIR)"
 	@mkdir -p $(dir $@)
 	$(call prepare-doc-source-list,$(PRIVATE_SRC_LIST_FILE),$(PRIVATE_JAVA_FILES), \
 			$(PRIVATE_SOURCE_INTERMEDIATES_DIR) $(PRIVATE_ADDITIONAL_JAVA_DIR))
 	$(hide) ( \
-		head -1 $(PRIVATE_SRC_LIST_FILE) | tr " " "\n" | sort | uniq | tr "\n" " " > $(PRIVATE_SRC_LIST_FILE)_temp; \
-		cat $(PRIVATE_SRC_LIST_FILE) | sed '1 d' >> $(PRIVATE_SRC_LIST_FILE)_temp; \
-		mv $(PRIVATE_SRC_LIST_FILE)_temp $(PRIVATE_SRC_LIST_FILE); \
 		javadoc \
                 -encoding UTF-8 \
                 $(PRIVATE_DROIDDOC_OPTIONS) \
@@ -236,7 +230,7 @@ ifeq ($(strip $(LOCAL_UNINSTALLABLE_MODULE)),)
 out_zip := $(OUT_DOCS)/$(LOCAL_MODULE)-docs.zip
 $(out_zip): PRIVATE_DOCS_DIR := $(out_dir)
 $(out_zip): $(full_target)
-	@echo -e ${PRT_HST}"Package docs:"${CL_RST}" $@"
+	@echo -e ${CL_YLW}"Package docs:"${CL_RST}" $@"
 	@rm -f $@
 	@mkdir -p $(dir $@)
 	$(hide) ( F=$$(pwd)/$@ ; cd $(PRIVATE_DOCS_DIR) && zip -rq $$F * )

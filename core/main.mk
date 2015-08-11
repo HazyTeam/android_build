@@ -98,10 +98,17 @@ include $(BUILD_SYSTEM)/config.mk
 # be generated correctly
 include $(BUILD_SYSTEM)/cleanbuild.mk
 
+# Bring in Qualcomm helper macros
+include $(BUILD_SYSTEM)/qcom_utils.mk
+
+# Bring in Mediatek helper macros too
+include $(BUILD_SYSTEM)/mtk_utils.mk
+
 # Include the google-specific config
 -include vendor/google/build/config.mk
 
 VERSION_CHECK_SEQUENCE_NUMBER := 5
+
 -include $(OUT_DIR)/versions_checked.mk
 ifneq ($(VERSION_CHECK_SEQUENCE_NUMBER),$(VERSIONS_CHECKED))
 
@@ -136,8 +143,8 @@ $(warning ************************************************************)
 $(error Directory names containing spaces not supported)
 endif
 
-java_version_str := $(shell unset _JAVA_OPTIONS && java -version 2>&1)
-javac_version_str := $(shell unset _JAVA_OPTIONS && javac -version 2>&1)
+java_version_str := $(shell unset _JAVA_OPTIONS JAVA_TOOL_OPTIONS && java -version 2>&1)
+javac_version_str := $(shell unset _JAVA_OPTIONS JAVA_TOOL_OPTIONS && javac -version 2>&1)
 
 # Check for the correct version of java, should be 1.7 by
 # default, and 1.6 if LEGACY_USE_JAVA6 is set.
@@ -163,9 +170,8 @@ $(info The required version is: $(required_version))
 $(info $(space))
 $(info Please follow the machine setup instructions at)
 $(info $(space)$(space)$(space)$(space)https://source.android.com/source/initializing.html)
-$(info $(space))
-$(info Continue at your own peril!)
 $(info ************************************************************)
+$(error stop)
 endif
 
 # Check for the current JDK.
@@ -259,9 +265,6 @@ endif
 
 # Bring in standard build system definitions.
 include $(BUILD_SYSTEM)/definitions.mk
-
-# Bring in Qualcomm helper macros
-include $(BUILD_SYSTEM)/qcom_utils.mk
 
 # Bring in dex_preopt.mk
 include $(BUILD_SYSTEM)/dex_preopt.mk
@@ -519,11 +522,7 @@ ifneq ($(dont_bother),true)
 subdir_makefiles := \
 	$(shell build/tools/findleaves.py --prune=$(OUT_DIR) --prune=.repo --prune=.git $(subdirs) Android.mk)
 
-ifneq ($(HIDE_MAKEFILE_INCLUDES),y)
-$(foreach mk, $(subdir_makefiles), $(info including $(mk) ...)$(eval include $(mk)))
-else
 $(foreach mk, $(subdir_makefiles), $(eval include $(mk)))
-endif
 
 endif # dont_bother
 
@@ -726,15 +725,15 @@ else
 endif
 
 eng_MODULES := $(sort \
-        $(call get-tagged-modules,eng) \
+        $(call module-installed-files, $(call module-names-for-tag-list,eng)) \
         $(call module-installed-files, $(PRODUCTS.$(INTERNAL_PRODUCT).PRODUCT_PACKAGES_ENG)) \
     )
 debug_MODULES := $(sort \
-        $(call get-tagged-modules,debug) \
+        $(call module-installed-files, $(call module-names-for-tag-list,debug)) \
         $(call module-installed-files, $(PRODUCTS.$(INTERNAL_PRODUCT).PRODUCT_PACKAGES_DEBUG)) \
     )
 tests_MODULES := $(sort \
-        $(call get-tagged-modules,tests) \
+        $(call module-installed-files, $(call module-names-for-tag-list,tests)) \
         $(call module-installed-files, $(PRODUCTS.$(INTERNAL_PRODUCT).PRODUCT_PACKAGES_TESTS)) \
     )
 
@@ -1047,7 +1046,7 @@ $(foreach module,$(sample_MODULES),$(eval $(call \
 sample_ADDITIONAL_INSTALLED := \
         $(filter-out $(modules_to_install) $(modules_to_check) $(ALL_PREBUILT),$(sample_MODULES))
 samplecode: $(sample_APKS_COLLECTION)
-	@echo -e ${PRT_TGT}"Collect sample code apks:"${CL_RST}" $^"
+	@echo -e ${CL_GRN}"Collect sample code apks:"${CL_RST}" $^"
 	# remove apks that are not intended to be installed.
 	rm -f $(sample_ADDITIONAL_INSTALLED)
 endif  # samplecode in $(MAKECMDGOALS)
@@ -1058,7 +1057,7 @@ findbugs: $(INTERNAL_FINDBUGS_HTML_TARGET) $(INTERNAL_FINDBUGS_XML_TARGET)
 .PHONY: clean
 clean:
 	@rm -rf $(OUT_DIR)/*
-	@echo -e ${PRT_TGT}"Entire build directory removed."${CL_RST}
+	@echo -e ${CL_GRN}"Entire build directory removed."${CL_RST}
 
 .PHONY: clobber
 clobber: clean
@@ -1068,7 +1067,7 @@ clobber: clean
 #xxx scrape this from ALL_MODULE_NAME_TAGS
 .PHONY: modules
 modules:
-	@echo -e ${PRT_TGT}"Available sub-modules:"${CL_RST}
+	@echo -e ${CL_GRN}"Available sub-modules:"${CL_RST}
 	@echo "$(call module-names-for-tag-list,$(ALL_MODULE_TAGS))" | \
 	      tr -s ' ' '\n' | sort -u | $(COLUMN)
 

@@ -21,10 +21,6 @@ PRODUCT_PACKAGES := \
     Bluetooth \
     Camera2 \
     Gallery2 \
-    InputDevices \
-    Keyguard \
-    LatinIME \
-    Launcher3 \
     OneTimeInitializer \
     Provision \
     SystemUI \
@@ -33,16 +29,12 @@ PRODUCT_PACKAGES := \
 PRODUCT_PACKAGES += \
     clatd \
     clatd.conf \
+    javax.btobex \
     pppd \
     screenrecord
 
 PRODUCT_PACKAGES += \
-    librs_jni \
-    libvideoeditor_jni \
-    libvideoeditor_core \
-    libvideoeditor_osal \
-    libvideoeditor_videofilters \
-    libvideoeditorplayer \
+    librs_jni
 
 PRODUCT_PACKAGES += \
     audio.primary.default \
@@ -65,6 +57,7 @@ $(call inherit-product-if-exists, external/google-fonts/dancing-script/fonts.mk)
 $(call inherit-product-if-exists, external/google-fonts/carrois-gothic-sc/fonts.mk)
 $(call inherit-product-if-exists, external/google-fonts/coming-soon/fonts.mk)
 $(call inherit-product-if-exists, external/google-fonts/cutive-mono/fonts.mk)
+$(call inherit-product-if-exists, external/lohit-fonts/fonts.mk)
 $(call inherit-product-if-exists, external/noto-fonts/fonts.mk)
 $(call inherit-product-if-exists, external/naver-fonts/fonts.mk)
 $(call inherit-product-if-exists, frameworks/base/data/keyboards/keyboards.mk)

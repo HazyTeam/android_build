@@ -184,9 +184,11 @@ endif
 
 my_compiler_dependencies :=
 
-####################################################
+##################################################################
 ## Add FDO flags if FDO is turned on and supported
-####################################################
+## Please note that we will do option filtering during FDO build.
+## i.e. Os->O2, remove -fno-early-inline and -finline-limit.
+##################################################################
 ifeq ($(strip $(LOCAL_FDO_SUPPORT)), true)
   ifeq ($(strip $(LOCAL_IS_HOST_MODULE)),)
     my_cflags += $($(LOCAL_2ND_ARCH_VAR_PREFIX)TARGET_FDO_CFLAGS)
@@ -327,7 +329,6 @@ ifneq ($(LOCAL_NO_SYNTAX_CHECK),true)
 endif
 endif
 $(LOCAL_INTERMEDIATE_TARGETS): PRIVATE_CXX := $(my_cxx)
-$(LOCAL_INTERMEDIATE_TARGETS): PRIVATE_CLANG := $(my_clang)
 
 # TODO: support a mix of standard extensions so that this isn't necessary
 LOCAL_CPP_EXTENSION := $(strip $(LOCAL_CPP_EXTENSION))
@@ -785,7 +786,7 @@ import_includes_deps := $(strip \
     $(foreach l, $(my_static_libraries) $(my_whole_static_libraries), \
       $(call intermediates-dir-for,STATIC_LIBRARIES,$(l),$(LOCAL_IS_HOST_MODULE),,$(LOCAL_2ND_ARCH_VAR_PREFIX))/export_includes))
 $(import_includes) : $(import_includes_deps)
-	@echo -e ${PRT_IMP}Import includes file:${CL_RST} $@
+	@echo -e ${CL_CYN}Import includes file:${CL_RST} $@
 	$(hide) mkdir -p $(dir $@) && rm -f $@
 ifdef import_includes_deps
 	$(hide) for f in $^; do \
@@ -818,7 +819,7 @@ all_objects := $(normal_objects) $(gen_o_objects)
 
 ## Allow a device's own headers to take precedence over global ones
 ifneq ($(TARGET_SPECIFIC_HEADER_PATH),)
-my_c_includes += $(TOPDIR)$(TARGET_SPECIFIC_HEADER_PATH)
+my_c_includes := $(TOPDIR)$(TARGET_SPECIFIC_HEADER_PATH) $(my_c_includes)
 endif
 
 my_c_includes += $(TOPDIR)$(LOCAL_PATH) $(intermediates) $(generated_sources_dir)
@@ -928,6 +929,21 @@ my_asflags := $(call $(LOCAL_2ND_ARCH_VAR_PREFIX)convert-to-$(my_host)clang-flag
 my_ldflags := $(call $(LOCAL_2ND_ARCH_VAR_PREFIX)convert-to-$(my_host)clang-flags,$(my_ldflags))
 endif
 
+ifeq ($(LOCAL_FDO_SUPPORT), true)
+  build_with_fdo := false
+  ifeq ($(BUILD_FDO_INSTRUMENT), true)
+    build_with_fdo := true
+  endif
+  ifeq ($(BUILD_FDO_OPTIMIZE), true)
+    build_with_fdo := true
+  endif
+  ifeq ($(build_with_fdo), true)
+    my_cflags := $(patsubst -Os,-O2,$(my_cflags))
+    fdo_incompatible_flags=-fno-early-inlining -finline-limit=%
+    my_cflags := $(filter-out $(fdo_incompatible_flags),$(my_cflags))
+  endif
+endif
+
 $(LOCAL_INTERMEDIATE_TARGETS): PRIVATE_YACCFLAGS := $(LOCAL_YACCFLAGS)
 $(LOCAL_INTERMEDIATE_TARGETS): PRIVATE_ASFLAGS := $(my_asflags)
 $(LOCAL_INTERMEDIATE_TARGETS): PRIVATE_CONLYFLAGS := $(LOCAL_CONLYFLAGS)
@@ -970,7 +986,7 @@ export_includes := $(intermediates)/export_includes
 $(export_includes): PRIVATE_EXPORT_C_INCLUDE_DIRS := $(LOCAL_EXPORT_C_INCLUDE_DIRS)
 # Make sure .pb.h are already generated before any dependent source files get compiled.
 $(export_includes) : $(LOCAL_MODULE_MAKEFILE) $(proto_generated_headers)
-	@echo -e ${PRT_IMP}Export includes file:${CL_RST} $< -- $@
+	@echo -e ${CL_CYN}Export includes file:${CL_RST} $< -- $@
 	$(hide) mkdir -p $(dir $@) && rm -f $@
 ifdef LOCAL_EXPORT_C_INCLUDE_DIRS
 	$(hide) for d in $(PRIVATE_EXPORT_C_INCLUDE_DIRS); do \

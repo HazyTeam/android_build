@@ -40,7 +40,6 @@ SRC_HEADERS := \
 	$(TOPDIR)system/core/include \
 	$(TOPDIR)hardware/libhardware/include \
 	$(TOPDIR)hardware/libhardware_legacy/include \
-	$(TOPDIR)hardware/ril/include \
 	$(TOPDIR)libnativehelper/include \
 	$(TOPDIR)frameworks/native/include \
 	$(TOPDIR)frameworks/native/opengl/include \
@@ -150,6 +149,7 @@ endif
 # are specific to the user's build configuration.
 include $(BUILD_SYSTEM)/envsetup.mk
 
+-include vendor/extra/BoardConfigExtra.mk
 # The build system exposes several variables for where to find the kernel
 # headers:
 #   TARGET_DEVICE_KERNEL_HEADERS is automatically created for the current
@@ -383,11 +383,7 @@ AIDL := $(HOST_OUT_EXECUTABLES)/aidl$(HOST_EXECUTABLE_SUFFIX)
 PROTOC := $(HOST_OUT_EXECUTABLES)/aprotoc$(HOST_EXECUTABLE_SUFFIX)
 SIGNAPK_JAR := $(HOST_OUT_JAVA_LIBRARIES)/signapk$(COMMON_JAVA_PACKAGE_SUFFIX)
 MKBOOTFS := $(HOST_OUT_EXECUTABLES)/mkbootfs$(HOST_EXECUTABLE_SUFFIX)
-ifeq ($(BOARD_NEEDS_LZMA_MINIGZIP),true)
-MINIGZIP := /usr/bin/lzma
-else
 MINIGZIP := $(HOST_OUT_EXECUTABLES)/minigzip$(HOST_EXECUTABLE_SUFFIX)
-endif
 ifeq (,$(strip $(BOARD_CUSTOM_MKBOOTIMG)))
 MKBOOTIMG := $(HOST_OUT_EXECUTABLES)/mkbootimg$(HOST_EXECUTABLE_SUFFIX)
 else
@@ -395,6 +391,7 @@ MKBOOTIMG := $(BOARD_CUSTOM_MKBOOTIMG)
 endif
 MKYAFFS2 := $(HOST_OUT_EXECUTABLES)/mkyaffs2image$(HOST_EXECUTABLE_SUFFIX)
 APICHECK := $(HOST_OUT_EXECUTABLES)/apicheck$(HOST_EXECUTABLE_SUFFIX)
+MKIMAGE :=  $(HOST_OUT_EXECUTABLES)/mkimage$(HOST_EXECUTABLE_SUFFIX)
 FS_GET_STATS := $(HOST_OUT_EXECUTABLES)/fs_get_stats$(HOST_EXECUTABLE_SUFFIX)
 MKEXT2IMG := $(HOST_OUT_EXECUTABLES)/genext2fs$(HOST_EXECUTABLE_SUFFIX)
 MAKE_EXT4FS := $(HOST_OUT_EXECUTABLES)/make_ext4fs$(HOST_EXECUTABLE_SUFFIX)
@@ -472,18 +469,6 @@ else
 MD5SUM:=md5sum
 endif
 
-# In-place sed is done different in linux than OS X
-ifeq ($(HOST_OS),darwin)
-GSED:=$(shell which gsed)
-ifeq ($(GSED),)
-SED_INPLACE:=sed -i ''
-else
-SED_INPLACE:=gsed -i
-endif
-else
-SED_INPLACE:=sed -i
-endif
-
 APICHECK_CLASSPATH := $(HOST_JDK_TOOLS_JAR)
 APICHECK_CLASSPATH := $(APICHECK_CLASSPATH):$(HOST_OUT_JAVA_LIBRARIES)/doclava$(COMMON_JAVA_PACKAGE_SUFFIX)
 APICHECK_CLASSPATH := $(APICHECK_CLASSPATH):$(HOST_OUT_JAVA_LIBRARIES)/jsilver$(COMMON_JAVA_PACKAGE_SUFFIX)
@@ -496,10 +481,12 @@ else
   DEFAULT_SYSTEM_DEV_CERTIFICATE := build/target/product/security/testkey
 endif
 
+# Rules for QCOM targets
+include $(BUILD_SYSTEM)/qcom_target.mk
+
 # ###############################################################
 # Set up final options.
 # ###############################################################
-
 HOST_GLOBAL_CFLAGS += $(COMMON_GLOBAL_CFLAGS)
 HOST_RELEASE_CFLAGS += $(COMMON_RELEASE_CFLAGS)
 
@@ -516,7 +503,8 @@ HOST_GLOBAL_LD_DIRS += -L$(HOST_OUT_INTERMEDIATE_LIBRARIES)
 TARGET_GLOBAL_LD_DIRS += -L$(TARGET_OUT_INTERMEDIATE_LIBRARIES)
 
 HOST_PROJECT_INCLUDES:= $(SRC_HEADERS) $(SRC_HOST_HEADERS) $(HOST_OUT_HEADERS)
-TARGET_PROJECT_INCLUDES:= $(SRC_HEADERS) $(TARGET_OUT_HEADERS) \
+TARGET_PROJECT_INCLUDES:= $(SRC_HEADERS) $(TOPDIR)$(call project-path-for,ril)/include \
+		$(TARGET_OUT_HEADERS) \
 		$(TARGET_DEVICE_KERNEL_HEADERS) $(TARGET_BOARD_KERNEL_HEADERS) \
 		$(TARGET_PRODUCT_KERNEL_HEADERS)
 
@@ -567,16 +555,24 @@ TARGET_CPU_SMP ?= true
 DEX2OAT_TARGET_ARCH := $(TARGET_ARCH)
 DEX2OAT_TARGET_CPU_VARIANT := $(TARGET_CPU_VARIANT)
 DEX2OAT_TARGET_INSTRUCTION_SET_FEATURES := default
-ifneq (,$(filter $(DEX2OAT_TARGET_CPU_VARIANT),cortex-a7 cortex-a15 krait denver))
+ifneq (,$(filter $(DEX2OAT_TARGET_CPU_VARIANT),cortex-a7 cortex-a15 krait denver generic cortex-a53))
   DEX2OAT_TARGET_INSTRUCTION_SET_FEATURES := div
+  ifneq (,$(filter $(DEX2OAT_TARGET_CPU_VARIANT),cortex-a53))
+    DEX2OAT_TARGET_INSTRUCTION_SET_FEATURES += needfix_835769
+    DEX2OAT_TARGET_INSTRUCTION_SET_FEATURES := $(subst $(space),$(comma),$(strip $(DEX2OAT_TARGET_INSTRUCTION_SET_FEATURES)))
+  endif
 endif
 
 ifdef TARGET_2ND_ARCH
 $(TARGET_2ND_ARCH_VAR_PREFIX)DEX2OAT_TARGET_ARCH := $(TARGET_2ND_ARCH)
 $(TARGET_2ND_ARCH_VAR_PREFIX)DEX2OAT_TARGET_CPU_VARIANT := $(TARGET_2ND_CPU_VARIANT)
 $(TARGET_2ND_ARCH_VAR_PREFIX)DEX2OAT_TARGET_INSTRUCTION_SET_FEATURES := default
-ifneq (,$(filter $($(TARGET_2ND_ARCH_VAR_PREFIX)DEX2OAT_TARGET_CPU_VARIANT),cortex-a7 cortex-a15 krait denver))
+ifneq (,$(filter $($(TARGET_2ND_ARCH_VAR_PREFIX)DEX2OAT_TARGET_CPU_VARIANT),cortex-a7 cortex-a15 krait denver cortex-a53))
   $(TARGET_2ND_ARCH_VAR_PREFIX)DEX2OAT_TARGET_INSTRUCTION_SET_FEATURES := div
+  ifneq (,$(filter $($(TARGET_2ND_ARCH_VAR_PREFIX)DEX2OAT_TARGET_CPU_VARIANT),cortex-a53))
+    DEX2OAT_TARGET_INSTRUCTION_SET_FEATURES += needfix_835769
+    DEX2OAT_TARGET_INSTRUCTION_SET_FEATURES := $(subst $(space),$(comma),$(strip $(DEX2OAT_TARGET_INSTRUCTION_SET_FEATURES)))
+  endif
 endif
 endif
 
@@ -632,13 +628,27 @@ RS_PREBUILT_CLCORE := prebuilts/sdk/renderscript/lib/$(TARGET_ARCH)/librsrt_$(TA
 RS_PREBUILT_LIBPATH := -L prebuilts/ndk/8/platforms/android-9/arch-$(TARGET_ARCH)/usr/lib
 RS_PREBUILT_COMPILER_RT := prebuilts/sdk/renderscript/lib/$(TARGET_ARCH)/libcompiler_rt.a
 
-# Rules for QCOM targets
-include $(BUILD_SYSTEM)/qcom_target.mk
+# We might want to skip items listed in PRODUCT_COPY_FILES based on
+# various target flags. This is useful for replacing a binary module with one
+# built from source. This should be a list of destination files under $OUT
+#
+TARGET_COPY_FILES_OVERRIDES := \
+    $(addprefix %:, $(strip $(TARGET_COPY_FILES_OVERRIDES)))
 
-##ifneq ($(CUSTOM_BUILD),)
+ifneq ($(TARGET_COPY_FILES_OVERRIDES),)
+    PRODUCT_COPY_FILES := $(filter-out $(TARGET_COPY_FILES_OVERRIDES), $(PRODUCT_COPY_FILES))
+endif
+
+ifneq ($(CUSTOM_BUILD),)
 ## We need to be sure the global selinux policies are included
 ## last, to avoid accidental resetting by device configs
-##$(eval include vendor/hazy/sepolicy/sepolicy.mk)
-##endif
+$(eval include vendor/hazy/sepolicy/sepolicy.mk)
+
+# Include any vendor specific config.mk file
+-include $(TOPDIR)vendor/*/build/core/config.mk
+
+# Include any vendor specific apicheck.mk file
+-include $(TOPDIR)vendor/*/build/core/apicheck.mk
+endif
 
 include $(BUILD_SYSTEM)/dumpvar.mk
