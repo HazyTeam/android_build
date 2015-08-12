@@ -39,13 +39,14 @@ PRODUCT_PACKAGES += \
     InputDevices \
     KeyChain \
     Keyguard \
-    LatinIME \
+    Launcher2 \
     ManagedProvisioning \
     PicoTts \
     PacProcessor \
     libpac \
     PrintSpooler \
     ProxyHandler \
+    QuickSearchBox \
     Settings \
     SharedStorageBackup \
     Telecom \
