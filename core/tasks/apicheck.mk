@@ -76,7 +76,11 @@ $(eval $(call check-api, \
 
 .PHONY: update-public-api
 update-public-api: $(INTERNAL_PLATFORM_API_FILE) | $(ACP)
+<<<<<<< HEAD
 	@echo -e ${CL_GRN}"Copying current.txt"${CL_RST}
+=======
+	@echo Copying current.txt
+>>>>>>> a09d8a04b623c38a3ea8351cac8e55602a17d56f
 	$(hide) $(ACP) $(INTERNAL_PLATFORM_API_FILE) frameworks/base/api/current.txt
 	@echo -e ${CL_GRN}"Copying removed.txt"${CL_RST}
 	$(hide) $(ACP) $(INTERNAL_PLATFORM_REMOVED_API_FILE) frameworks/base/api/removed.txt

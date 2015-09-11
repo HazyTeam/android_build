@@ -9,9 +9,13 @@ ifndef build_mac_version
 
 build_mac_version := $(shell sw_vers -productVersion)
 
+<<<<<<< HEAD
 # Caution: Do not add 10.10 to this list until the prebuilts/darwin-x86 toolchains are updated.
 #          In the meantime, setting mac_sdk_version to 10.9 works on Yosemite (verified on 10.10.1).
 mac_sdk_versions_supported := 10.6 10.7 10.8 10.9
+=======
+mac_sdk_versions_supported :=  10.6 10.7 10.8 10.9
+>>>>>>> a09d8a04b623c38a3ea8351cac8e55602a17d56f
 ifneq ($(strip $(MAC_SDK_VERSION)),)
 mac_sdk_version := $(MAC_SDK_VERSION)
 ifeq ($(filter $(mac_sdk_version),$(mac_sdk_versions_supported)),)

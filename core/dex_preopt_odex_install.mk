@@ -109,10 +109,15 @@ endif
 
 # Compile apps with position-independent code if WITH_DEXPREOPT_PIC=true
 ifeq (true,$(WITH_DEXPREOPT_PIC))
+<<<<<<< HEAD
 ifeq (false,$(WITH_DEXPREOPT_COMP))
   LOCAL_DEX_PREOPT_FLAGS += --compile-pic
 endif
 endif
+=======
+  LOCAL_DEX_PREOPT_FLAGS += --compile-pic
+endif
+>>>>>>> a09d8a04b623c38a3ea8351cac8e55602a17d56f
 
 $(built_odex): PRIVATE_DEX_PREOPT_FLAGS := $(LOCAL_DEX_PREOPT_FLAGS)
 

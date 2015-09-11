@@ -8,10 +8,13 @@ To make these errors go away, you have two choices:
 
    2) You can update current.txt by executing the following command:
          make update-api
+<<<<<<< HEAD
 
       ^^^^^^^^^^^^^^^^^^
       NO. NO. STOP BEING LAZY. SERIOUSLY.
       DO NOT DO THIS in CM. THIS IS A LIE. IT WILL BREAK THINGS.
+=======
+>>>>>>> a09d8a04b623c38a3ea8351cac8e55602a17d56f
 
       To submit the revised current.txt to the main Android repository,
       you will need approval.

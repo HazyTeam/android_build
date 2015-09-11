@@ -1479,6 +1479,11 @@ endif;
     script.Mount("/vendor")
     vendor_diff.EmitExplicitTargetVerification(script)
   script.AddToZip(target_zip, output_zip, input_path=OPTIONS.updater_binary)
+<<<<<<< HEAD
+=======
+
+  WriteMetadata(metadata, output_zip)
+>>>>>>> a09d8a04b623c38a3ea8351cac8e55602a17d56f
 
   WriteMetadata(metadata, output_zip)
 
