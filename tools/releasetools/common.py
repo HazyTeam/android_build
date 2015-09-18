@@ -1118,10 +1118,6 @@ class BlockDifference:
           int(i) for i in
           OPTIONS.info_dict.get("blockimgdiff_versions", "1").split(","))
 
-<<<<<<< HEAD
-    b = blockimgdiff.BlockImageDiff(tgt, src, threads=OPTIONS.worker_threads,
-                                    version=version, use_lzma=use_lzma)
-=======
     version = 1
     if OPTIONS.info_dict:
       version = max(
@@ -1130,7 +1126,6 @@ class BlockDifference:
 
     b = blockimgdiff.BlockImageDiff(tgt, src, threads=OPTIONS.worker_threads,
                                     version=version)
->>>>>>> a09d8a04b623c38a3ea8351cac8e55602a17d56f
     tmpdir = tempfile.mkdtemp()
     OPTIONS.tempfiles.append(tmpdir)
     self.path = os.path.join(tmpdir, partition)
@@ -1144,17 +1139,10 @@ class BlockDifference:
       script.Print("Patching %s image unconditionally..." % (self.partition,))
     else:
       script.Print("Patching %s image after verification." % (self.partition,))
-<<<<<<< HEAD
 
     if progress: script.ShowProgress(progress, 0)
     self._WriteUpdate(script, output_zip)
-
-=======
-
-    if progress: script.ShowProgress(progress, 0)
-    self._WriteUpdate(script, output_zip)
-
->>>>>>> a09d8a04b623c38a3ea8351cac8e55602a17d56f
+    
   def WriteVerifyScript(self, script):
     if not self.src:
       script.Print("Image %s will be patched unconditionally." % (self.partition,))

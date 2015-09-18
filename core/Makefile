@@ -226,14 +226,8 @@ ifneq ($(PRODUCTS.$(INTERNAL_PRODUCT).PRODUCT_OEM_PROPERTIES),)
 endif
 	$(hide) TARGET_BUILD_TYPE="$(TARGET_BUILD_VARIANT)" \
 			TARGET_BUILD_FLAVOR="$(TARGET_PRODUCT)-$(TARGET_BUILD_VARIANT)" \
-<<<<<<< HEAD
-			TARGET_DEVICE="$(TARGET_VENDOR_DEVICE_NAME)" \
-			CUSTOM_DEVICE="$(TARGET_DEVICE)" \
-			PRODUCT_NAME="$(TARGET_VENDOR_PRODUCT_NAME)" \
-=======
 			TARGET_DEVICE="$(TARGET_DEVICE)" \
 			PRODUCT_NAME="$(TARGET_PRODUCT)" \
->>>>>>> a09d8a04b623c38a3ea8351cac8e55602a17d56f
 			PRODUCT_BRAND="$(PRODUCT_BRAND)" \
 			PRODUCT_DEFAULT_LANGUAGE="$(call default-locale-language,$(PRODUCT_LOCALES))" \
 			PRODUCT_DEFAULT_REGION="$(call default-locale-region,$(PRODUCT_LOCALES))" \
@@ -827,29 +821,12 @@ recovery_resources_common := $(call project-path-for,recovery)/res
 
 # Set recovery_density to the density bucket of the device.
 recovery_density := unknown
-ifneq (,$(TARGET_RECOVERY_DENSITY))
-recovery_density := $(filter %dpi,$(TARGET_RECOVERY_DENSITY))
-else
 ifneq (,$(PRODUCT_AAPT_PREF_CONFIG))
-ifeq ($(PRODUCT_AAPT_PREF_CONFIG),560dpi)
-recovery_density := xxxhdpi
-else
 # If PRODUCT_AAPT_PREF_CONFIG includes a dpi bucket, then use that value.
 recovery_density := $(filter %dpi,$(PRODUCT_AAPT_PREF_CONFIG))
-endif
 else
 # Otherwise, use the default medium density.
 recovery_densities := mdpi
-<<<<<<< HEAD
-endif
-=======
->>>>>>> a09d8a04b623c38a3ea8351cac8e55602a17d56f
-endif
-
-ifneq (,$(wildcard $(recovery_resources_common)-$(recovery_density)))
-recovery_resources_common := $(recovery_resources_common)-$(recovery_density)
-else
-recovery_resources_common := $(recovery_resources_common)-xhdpi
 endif
 
 # Select the 18x32 font on high-density devices (xhdpi and up); and

@@ -196,20 +196,12 @@ class Transfer(object):
 # original image.
 
 class BlockImageDiff(object):
-<<<<<<< HEAD
-  def __init__(self, tgt, src=None, threads=None, version=2, use_lzma=False):
-=======
   def __init__(self, tgt, src=None, threads=None, version=2):
->>>>>>> a09d8a04b623c38a3ea8351cac8e55602a17d56f
     if threads is None:
       threads = multiprocessing.cpu_count() // 2
       if threads == 0: threads = 1
     self.threads = threads
     self.version = version
-<<<<<<< HEAD
-    self.use_lzma = use_lzma
-=======
->>>>>>> a09d8a04b623c38a3ea8351cac8e55602a17d56f
 
     assert version in (1, 2)
 
